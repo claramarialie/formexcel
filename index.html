@@ -1,120 +1,87 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>FormExcel</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FormExcel</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+  <link rel="stylesheet" href="style.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 
 </head>
 <body>
-
-<div class="container">
-
-<h2>Upload Foto → Export Excel</h2>
-
-<input type="file" id="upload" multiple accept="image/*">
+  <div class="container">
+<input type="file" id="foto" accept="image/*">
 
 <br>
 
-<button onclick="exportExcel()">Export Excel</button>
+<img id="preview" style="display:none;">
 
-<div class="grid" id="preview"></div>
+<br>
 
-</div>
+<button onclick="exportExcel()">Export ke Excel</button>
 
 <script>
 
-let images=[];
+let imageData = null;
+let fileName = "";
 
-document.getElementById("upload").addEventListener("change",function(e){
+document.getElementById("foto").addEventListener("change", function(e){
 
-images=[];
+  const file = e.target.files[0];
 
-const preview=document.getElementById("preview");
-preview.innerHTML="";
-
-Array.from(e.target.files).forEach(file=>{
-
-const reader=new FileReader();
-
-reader.onload=function(evt){
-
-images.push({
-name:file.name,
-base64:evt.target.result
-});
-
-const card=document.createElement("div");
-card.className="card";
-
-card.innerHTML=`
-<img src="${evt.target.result}">
-<small>${file.name}</small>
-`;
-
-preview.appendChild(card);
-
-}
-
-reader.readAsDataURL(file);
+  if(!file) return;
+  fileName = file.name;
+  const reader = new FileReader();
+  reader.onload = function(event){
+      imageData = event.target.result;
+      const img = document.getElementById("preview");
+      img.src = imageData;
+      img.style.display = "block";
+  }
+  reader.readAsDataURL(file);
 
 });
-
-});
-
 
 async function exportExcel(){
 
-if(images.length==0){
-alert("Upload foto terlebih dahulu");
-return;
-}
+  if(!imageData){
+    alert("Silakan pilih foto terlebih dahulu.");
+    return;
+  }
 
-const workbook=new ExcelJS.Workbook();
+  const workbook = new ExcelJS.Workbook();
+  const sheet = workbook.addWorksheet("Foto");
 
-const sheet=workbook.addWorksheet("Foto");
+  sheet.columns = [
+    { header:"Nama File", width:40 },
+    { header:"Foto", width:25 }
+  ];
 
-sheet.columns=[
-{header:"No",width:10},
-{header:"Nama File",width:35},
-{header:"Foto",width:25}
-];
+  sheet.addRow([fileName,""]);
+  sheet.getRow(2).height = 90;
 
-for(let i=0;i<images.length;i++){
+  const imageId = workbook.addImage({
+    base64:imageData,
+    extension:imageData.includes("png") ? "png" : "jpeg"
+  });
 
-const img=images[i];
+  sheet.addImage(imageId,{
+    tl:{col:1.2,row:1.2},
+    ext:{width:100,height:100}
+  });
 
-const row=sheet.addRow([
-i+1,
-img.name,
-""
-]);
+  const buffer = await workbook.xlsx.writeBuffer();
 
-row.height=90;
-
-const imageId=workbook.addImage({
-base64:img.base64,
-extension:img.base64.includes("png")?"png":"jpeg"
-});
-
-sheet.addImage(imageId,{
-tl:{col:2.2,row:i+1.2},
-ext:{width:100,height:100}
-});
-
-}
-
-const buffer=await workbook.xlsx.writeBuffer();
-
-saveAs(
-new Blob([buffer],{
-type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-}),
-"Data_Foto.xlsx"
-);
+  saveAs(
+    new Blob([buffer],{
+      type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    }),
+    "Foto.xlsx"
+  );
 
 }
 
