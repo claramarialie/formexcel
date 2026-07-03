@@ -15,12 +15,29 @@
 <body>
   <div class="container">
     <input type="file" id="foto" accept="image/*" capture="environment">
+    <input type="file" id="foto" accept="image/*" capture="environment">
+    <input type="file" id="foto" accept="image/*" capture="environment">
+    <input type="file" id="foto" accept="image/*" capture="environment">
+    <input type="file" id="foto" accept="image/*" capture="environment">
+    <input type="file" id="foto" accept="image/*" capture="environment">
+    <input type="file" id="foto" accept="image/*" capture="environment">
+    <input type="file" id="foto" accept="image/*" capture="environment">
+    <input type="file" id="foto" accept="image/*" capture="environment">
+    <div id="list"></div>
     <br>
     <img id="preview" style="display:none;">
     <br>
     <button onclick="exportExcel()">Export ke Excel</button>
   </div>
   <script>
+
+    const data = ["Foto 1", "Foto 2", "Foto 3"];
+
+    const list = document.getElementById("list");
+
+    for (const item of data) {
+        list.innerHTML += `<div>${item}</div>`;
+    }
     let imageData = null;
     let fileName = "";
 
