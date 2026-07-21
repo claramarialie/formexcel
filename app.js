@@ -144,7 +144,7 @@ function compressResizeImg(file, maxW = 150, maxH = 120) {
                 ctx.drawImage(img, 0, 0, width, height);
 
                 resolve({
-                    base64: canvas.toDataURL("image/jpeg", 0.8),
+                    base64: canvas.toDataURL("image/jpeg", 1),
                     width,
                     height
                 });
